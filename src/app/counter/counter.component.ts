@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { from, interval, of, take } from 'rxjs';
+import { concat, concatMap, from, interval, Observable, of, take, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-counter',
@@ -8,9 +8,9 @@ import { from, interval, of, take } from 'rxjs';
   templateUrl: './counter.component.html',
   styleUrl: './counter.component.css'
 })
-export class CounterComponent implements OnInit{
+export class CounterComponent {
 
-  ngOnInit() {
+  constructor() {
 
     // 1. using of
     const scores$ = of(67, 68, 69, 70)
@@ -38,6 +38,38 @@ export class CounterComponent implements OnInit{
      error: err => console.error(err),
      complete: () => console.log('Interval observable completed')
   })
-  }
+
+
+  // 4. combine observables
+  const numberObservable$ = of(1,2,3,4);
+  const names$ = from(['Rhoda', 'Jacobs', 'Alice', 'Jessica']);
+
+  // combined observable
+  const combinedObservable$ = concat(numberObservable$, names$);
+
+  // subscribe
+  combinedObservable$.subscribe({
+    next: value => console.log('Value: ', value),
+    error: err => console.error(err),
+    complete: () => console.log('Combined observable completed')
+  })
   
-}
+  
+
+// 5. error handling
+const errorObservable$ = of(1, 2, 3).pipe(
+  concatMap((value) => {
+    if (value === 3) {
+      return throwError('An Error occurred after emitting 3');
+    }
+    return of(value);
+  })
+);
+
+errorObservable$.subscribe({
+  next: (value) => console.log('Emmited value:', value),
+  error: (error) => console.error(error),
+  complete: () => console.log('Error Observable completed'),
+})
+}}
+
